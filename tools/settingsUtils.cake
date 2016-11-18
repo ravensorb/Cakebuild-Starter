@@ -30,7 +30,7 @@ public class SettingsUtils
 		obj.ExecutePackage 		= !GetBoolArgument(context, "skipPackage", !obj.ExecutePackage);
 
 		obj.ExecuteUnitTest 	= GetBoolArgument(context, "unitTest", obj.ExecuteUnitTest); 
-		obj.ExecuteUnitTest 	= !GetBoolArgument(context, "unitTest", !obj.ExecuteUnitTest); 
+		obj.ExecuteUnitTest 	= !GetBoolArgument(context, "skipUnitTest", !obj.ExecuteUnitTest); 
 
 		obj.ExecuteClean 		= GetBoolArgument(context, "clean", obj.ExecuteClean); 
 		obj.ExecuteClean 		= !GetBoolArgument(context, "skipClean", !obj.ExecuteClean); 
