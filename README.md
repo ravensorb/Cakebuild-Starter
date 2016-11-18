@@ -12,6 +12,7 @@ Provide a starting framework for using [CakeBuild](http://cakebuild.net) as your
 | LICENSE | Standard License Agreement |
 | settings.json | JSON file for handling settings for automated build (Details below) |
 | version.json | JSON file for handling version for automated build (Details below) |
+| src/AssembyInfo.Shared.cs | Sample Shared AssemblyInfo file (Details below |)
 
 # build.cake
 
@@ -29,3 +30,13 @@ Contains all of the various settings for the build/test/packaging.  By default t
 
 # version.json
 Contains information for the current version information
+
+# AssemblyInfo.Shared.cs
+A sample AssemblyInfo.cs that can be included in all of your projects to handle consolidating assembly details into a single location
+Note: The leverage this, you'll need to edit your existing AssemblyInfo.cs files and comment out the following attributes
+* [assembly: AssemblyCompany("")]
+* [assembly: AssemblyProduct("")]
+* [assembly: AssemblyCopyright("")]
+* [assembly: AssemblyTrademark("")]
+* [assembly: AssemblyConfiguration("")]
+* [assembly: AssemblyVersion("1.0.0.")]
