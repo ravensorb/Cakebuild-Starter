@@ -3,12 +3,14 @@
 		"VersionFile": "./version.json",
 		"AssemblyInfoFile": "./src/AssemblyInfo.Shared.cs",
 		"LoadFrom": "versionfile",
-		"AutoIncrementVersion": false,
+		"AutoIncrementVersion": false
 	},
 	"build": {
 		"SourcePath": "./src",
 		"SolutionFileSpec": "./src/*.sln",
-		"TreatWarningsAsErrors": false,
+		"TreatWarningsAsErrors": false
+	},
+	"xamarin":{
 		"EnableXamarinIOS": false,
 		"MacAgentIPAddress": "",
 		"MacAgentUserName": "",

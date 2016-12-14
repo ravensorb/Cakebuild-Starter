@@ -35,6 +35,13 @@ public class SettingsUtils
 		obj.ExecuteClean 		= GetBoolArgument(context, "clean", obj.ExecuteClean); 
 		obj.ExecuteClean 		= !GetBoolArgument(context, "skipClean", !obj.ExecuteClean); 
 
+		if (obj.Xamarin == null) obj.Xamarin = new XamarinSettings();
+
+		obj.Xamarin.EnableXamarinIOS 		= GetBoolArgument(context, "enableXamarinIOS", obj.Xamarin.EnableXamarinIOS);
+		obj.Xamarin.MacAgentIPAddress 		= context.Argument<string>("macAgentIP", obj.Xamarin.MacAgentIPAddress);
+		obj.Xamarin.MacAgentUserName		= context.Argument<string>("macUserName", obj.Xamarin.MacAgentUserName);
+		obj.Xamarin.MacAgentUserPassword 	= context.Argument<string>("macPassword", obj.Xamarin.MacAgentUserPassword);
+
 		if (obj.NuGet == null) obj.NuGet = new NuGetSettings();
 		
 		obj.NuGet.FeedUrl		= context.Argument<string>("nugetFeed", obj.NuGet.FeedUrl);
@@ -73,6 +80,10 @@ public class SettingsUtils
 		context.Information("\t\t-nugetApiKey=<Nuget Feed API Key>\t(Default: {0})", defaultValues.NuGet.FeedApiKey);
 		context.Information("\t\t-dependencyVersion=<Version Number>\t(Default: {0})", defaultValues.NuGet.LibraryMinVersionDependency);
 		context.Information("\t\t-dependencyType=<none|exact|greaterthan|greaterthanorequal|lessthan>\t\t(Default: {0})", defaultValues.NuGet.VersionDependencyTypeForLibrary);
+		context.Information("\t\t-enableXamarinIOS=<0|1>\t\t\t(Default: {0})", defaultValues.Xamarin.EnableXamarinIOS);
+		context.Information("\t\t-macAgentIP=<Mac IP Address>\t\t(Default: {0})", defaultValues.Xamarin.MacAgentIPAddress);
+		context.Information("\t\t-macUserName=<Mac User Name>\t\t(Default: {0})", defaultValues.Xamarin.MacAgentUserName);
+		context.Information("\t\t-macPassword=<Mac Password>\t\t(Default: {0})", defaultValues.Xamarin.MacAgentUserPassword);
 		context.Information("");
 		context.Information("Examples:");
 		context.Information("\t.\\build Build -Configuration=Release");
@@ -96,6 +107,7 @@ public class Settings
 		
 		Version = new VersionSettings();
 		Build = new BuildSettings();
+		Xamarin = new XamarinSettings();
 		Test = new TestSettings();
 		NuGet = new NuGetSettings();
 	}
@@ -114,6 +126,7 @@ public class Settings
 	public BuildSettings Build {get;set;}
 	public TestSettings Test {get;set;}
 	public NuGetSettings NuGet {get;set;}
+	public XamarinSettings Xamarin {get;set;}
 	
 	public void Display(ICakeContext context)
 	{
@@ -127,11 +140,11 @@ public class Settings
 		context.Information("\tExecute Build: {0}", ExecuteBuild);
 		context.Information("\tExecute Package: {0}", ExecutePackage);
 		context.Information("\tExecute UnitTests: {0}", ExecuteUnitTest);
-		context.Information("\tExecute Clean: {0}", ExecuteClean);
-		
+		context.Information("\tExecute Clean: {0}", ExecuteClean);		
 		
 		Version.Display(context);
 		Build.Display(context);
+		Xamarin.Display(context);
 		Test.Display(context);
 		NuGet.Display(context);
 	}
@@ -166,7 +179,6 @@ public class BuildSettings
 		SourcePath = "./source";
 		SolutionFileSpec = "*.sln";
 		TreatWarningsAsErrors = false;
-		EnableXamarinIOS = false;
 		MaxCpuCount = 0;
 	}
 	
@@ -174,11 +186,6 @@ public class BuildSettings
 	public string SolutionFileSpec {get;set;}
 	public bool TreatWarningsAsErrors {get;set;}
 	public int MaxCpuCount {get;set;}
-	
-	public bool EnableXamarinIOS {get;set;}
-	public string MacAgentIPAddress {get;set;}
-	public string MacAgentUserName {get;set;}
-	public string MacAgentUserPassword {get;set;}
 	
 	public string SolutionFilePath {
 		get {
@@ -196,7 +203,24 @@ public class BuildSettings
 		context.Information("\tSolution File Path: {0}", SolutionFilePath);
 		context.Information("\tTreat Warnings As Errors: {0}", TreatWarningsAsErrors);
 		context.Information("\tMax Cpu Count: {0}", MaxCpuCount);
-		
+	}
+}
+
+public class XamarinSettings
+{
+	public XamarinSettings()
+	{
+		EnableXamarinIOS = false;
+	}
+
+	public bool EnableXamarinIOS {get;set;}
+	public string MacAgentIPAddress {get;set;}
+	public string MacAgentUserName {get;set;}
+	public string MacAgentUserPassword {get;set;}
+
+	public void Display(ICakeContext context)
+	{
+		context.Information("Xamarin Settings:");	
 		context.Information("\tEnable Xamarin IOS: {0}", EnableXamarinIOS);
 		context.Information("\tMac Agent IP Address: {0}", MacAgentIPAddress);
 		context.Information("\tMac Agent User Name: {0}", MacAgentUserName);
