@@ -126,12 +126,18 @@ Task("Build")
 	foreach(var solution in solutions)
 	{
 		Information("Building {0}", solution);
-		MSBuild(solution, s =>
-			s.SetPlatformTarget(PlatformTarget.MSIL)
-				.SetMaxCpuCount(settings.Build.MaxCpuCount)
-				.WithProperty("TreatWarningsAsErrors",settings.Build.TreatWarningsAsErrors.ToString())
-				.WithTarget("Build")
-				.SetConfiguration(settings.Configuration));
+		try {
+			MSBuild(solution, s =>
+				s.SetPlatformTarget(PlatformTarget.MSIL)
+					.SetMaxCpuCount(settings.Build.MaxCpuCount)
+					.WithProperty("TreatWarningsAsErrors",settings.Build.TreatWarningsAsErrors.ToString())
+					.WithTarget("Build")
+					.SetConfiguration(settings.Configuration));
+		} 
+		catch (Exception ex)
+		{
+			Error("Files to build project: " + solution + ". Error: " + ex.Message);
+		}
 	}
 });
 

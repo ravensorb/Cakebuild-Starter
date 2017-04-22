@@ -3,7 +3,7 @@
 		"VersionFile": "./version.json",
 		"AssemblyInfoFile": "./src/AssemblyInfo.Shared.cs",
 		"LoadFrom": "versionfile",
-		"AutoIncrementVersion": false
+		"AutoIncrementVersion": true
 	},
 	"build": {
 		"SourcePath": "./src",
