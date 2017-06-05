@@ -253,14 +253,18 @@ paket-files/
 *.sln.iml
 
 # CAKE
-**/tools/Addins/
-**/tools/Cake/
-**/tools/GitVersion.CommandLine
-**/tools/nuget.exe
-**/tools/NUnit.ConsoleRunner
-**/tools/run-ps.cmd
-**/tools/publish-nugetpackages.ps1
-**/tools/packages.config.md5sum
+tools/Addins/
+tools/Cake/
+tools/GitVersion.CommandLine
+tools/NUnit.ConsoleRunner
+tools/nuget.exe
+tools/CredentialProvider.VSS.exe
+tools/VSS.NuGet.AuthHelper.exe
+tools/settingsUtils.cake
+tools/versionUtils.cake
+tools/VSS.NuGet.AuthHelper.exe
+tools/packages.config.md5sum
 
-# Xamarin
-/source/Components
+# GIT
+git.password
+nugetapi.key

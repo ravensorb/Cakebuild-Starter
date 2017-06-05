@@ -127,10 +127,8 @@ Task("Build")
 	{
 		Information("Building {0}", solution);
 		try {
-			MSBuild(solution, s =>
-				s.SetPlatformTarget(PlatformTarget.MSIL)
-					.SetMaxCpuCount(settings.Build.MaxCpuCount)
-					.WithProperty("TreatWarningsAsErrors",settings.Build.TreatWarningsAsErrors.ToString())
+			DotNetBuild(solution, s =>
+					s.WithProperty("TreatWarningsAsErrors",settings.Build.TreatWarningsAsErrors.ToString())
 					.WithTarget("Build")
 					.SetConfiguration(settings.Configuration));
 		} 
@@ -230,6 +228,17 @@ Task("Publish")
 	var nupkgFiles = GetFiles(settings.NuGet.NuGetPackagesSpec).Where(x => x.ToString().Contains(versionInfo.ToString())).ToList();
 
 	Information("\t{0}", string.Join("\n\t", nupkgFiles.Select(x => x.GetFilename().ToString()).ToList()));
+	
+	if (settings.NuGet.FeedApiKey == "NUGETAPIKEY") 
+	{
+		if (!System.IO.File.Exists("nugetapi.key"))
+		{
+			Error("Could not load nugetapi.key");
+			return;
+		}
+		
+		settings.NuGet.FeedApiKey = System.IO.File.ReadAllText("nugetapi.key");
+	}
 	
 	foreach (var n in nupkgFiles)
 	{
