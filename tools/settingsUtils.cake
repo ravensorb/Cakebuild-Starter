@@ -1,10 +1,12 @@
 #addin "Cake.Json"
+#addin "nuget:https://www.nuget.org/api/v2?package=Newtonsoft.Json"
+using Newtonsoft.Json;
 
 public class SettingsUtils
 {
 	public static Settings LoadSettings(ICakeContext context)
 	{
-		var settingsFile = context.Argument<string>("settingsFile", ".\\settings.json");
+		var settingsFile = context.Argument<string>("settingsFile", ".\\build.settings.json");
 		
 		context.Information("Loading Settings: {0}", settingsFile);
 
@@ -106,8 +108,8 @@ public class Settings
 		
 		Target = "DisplayHelp";
 		Configuration = "Release";
-		SettingsFile = ".\\settings.json";
-		VersionFile = ".\\version.json";
+		SettingsFile = ".\\build.settings.json";
+		VersionFile = ".\\build.version.json";
 		
 		Version = new VersionSettings();
 		Build = new BuildSettings();
