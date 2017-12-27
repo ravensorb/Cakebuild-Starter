@@ -26,6 +26,12 @@ var solutionPaths = solutions.Select(solution => solution.GetDirectory());
 
 Setup((c) =>
 {
+	c.Information("Command Line:");
+	c.Information("\tConfiguration: {0}", configuration);
+	c.Information("\tSettings Files: {0}", settingsFile);
+	c.Information("\tSkip Build: {0}", skipBuild);
+	c.Information("\tSolutions Found: {0}", solutions.Count);
+
 	// Executed BEFORE the first task.
 	settings.Display(c);
 	versionInfo.Display(c);
