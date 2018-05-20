@@ -143,10 +143,14 @@ Task("Build")
 	{
 		Information("Building {0}", solution);
 		try {
-			DotNetBuild(solution, s =>
-					s.WithProperty("TreatWarningsAsErrors",settings.Build.TreatWarningsAsErrors.ToString())
-					.WithTarget("Build")
-					.SetConfiguration(settings.Configuration));
+			MSBuild(solution, configurator =>
+				configurator.SetConfiguration(settings.Configuration)
+							// .SetVerbosity(Verbosity.Minimal)
+							// .UseToolVersion(MSBuildToolVersion.VS2015)
+							// .SetMSBuildPlatform(MSBuildPlatform.x86)
+							// .SetPlatformTarget(PlatformTarget.MSIL)
+			);
+			
 		} 
 		catch (Exception ex)
 		{
@@ -277,16 +281,18 @@ Task("Nuget-Publish")
 		settings.NuGet.FeedApiKey = System.IO.File.ReadAllText("nugetapi.key");
 	}
 	
-	foreach (var n in nupkgFiles)
-	{
-		try
-		{		
-			NuGetPush(n, new NuGetPushSettings {
+	var nugetSettings = new NuGetPushSettings {
 				Source = settings.NuGet.FeedUrl,
 				ApiKey = settings.NuGet.FeedApiKey,
 				ConfigFile = settings.NuGet.NuGetConfig,
 				Verbosity = NuGetVerbosity.Normal
-			});
+			};
+	
+	foreach (var n in nupkgFiles)
+	{
+		try
+		{		
+			NuGetPush(n, nugetSettings);
 		}
 		catch (Exception ex)
 		{
