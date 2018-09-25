@@ -3,12 +3,12 @@
 		"VersionFile": "./build.version.json",
 		"AssemblyInfoFile": "./src/AssemblyInfo.Shared.cs",
 		"LoadFrom": "versionfile",
-		"AutoIncrementVersion": true
+		"AutoIncrementVersion": false
 	},
 	"build": {
+		"BuildType": "dotnetcore",
 		"SourcePath": "./src",
-		"SolutionFileSpec": "./src/*.sln",
-		"BuildOutPutPath": "./src/Signaller/bin/[CONFIGURATION]", 
+		"SolutionFileSpec": "./*.sln",
 		"ArtifactsPath": "./artifacts/app",
 		"TreatWarningsAsErrors": false
 	},
@@ -21,13 +21,13 @@
 	"test": {
 		"SourcePath": "./tests",
 		"ResultsPath": "./artifacts",
-		"AssemblyFileSpec": "*.UnitTests.dll",
+		"AssemblyFileSpec": "*.Tests.dll",
 		"Framework": "NUnit3"
 	},
 	"nuget": {
-		"NuGetConfig": "./.nuget/NuGet.config",
-		"FeedUrl": "",
-		"FeedAPIKey": "",
+		"NuGetConfig": "./src/.nuget/NuGet.config",
+		"FeedUrl": "https://api.nuget.org/v3/index.json",
+		"FeedAPIKey": "NUGETAPIKEY",
 		"ArtifactsPath": "./artifacts/packages",
 		"NuspecPath": "./nuspec",
 		"UpdateVersion": true,
