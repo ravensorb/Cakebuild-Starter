@@ -15,16 +15,22 @@ public class SettingsUtils
 			context.Error("Settings File Does Not Exist");
 			return null;
 		}
-		
+
 		var obj = context.DeserializeJsonFromFile<Settings>(settingsFile);
 
 		obj.SettingsFile = settingsFile;
+
+		obj.RootPath = context.MakeAbsolute(context.Directory(obj.RootPath)).ToString() + "/";
+		if (obj.Build.ArtifactsPath.StartsWith("./")) obj.Build.ArtifactsPath = obj.Build.ArtifactsPath.Replace("./", obj.RootPath);
+		if (obj.Build.ArtifactsPath.Contains("[ROOTPATH]")) obj.Build.ArtifactsPath = obj.Build.ArtifactsPath.Replace("[ROOTPATH]", obj.RootPath);
+		
+		context.Information("Updating ArtifactsPath to {0}}", obj.Build.ArtifactsPath);
 		
 		// Allow for any overrides
 		obj.Target = context.Argument<string>("target", obj.Target);
 		obj.Configuration = context.Argument<string>("configuration", obj.Configuration);
 		obj.VersionFile = context.Argument<string>("versionFile", obj.VersionFile);
-				
+					
 		obj.ExecuteBuild 		= GetBoolArgument(context, "build", obj.ExecuteBuild);
 		obj.ExecuteBuild 		= !GetBoolArgument(context, "skipBuild", !obj.ExecuteBuild);
 
@@ -41,6 +47,11 @@ public class SettingsUtils
 		obj.ExecuteClean 		= GetBoolArgument(context, "clean", obj.ExecuteClean); 
 		obj.ExecuteClean 		= !GetBoolArgument(context, "skipClean", !obj.ExecuteClean); 
 
+		if (obj.Version == null) obj.Version = new VersionSettings();
+
+		obj.Version.AutoIncrementVersion = GetBoolArgument(context, "autoincrementversion", obj.Version.AutoIncrementVersion);
+		obj.Version.AutoIncrementVersion = GetBoolArgument(context, "autoversion", obj.Version.AutoIncrementVersion);
+		
 		if (obj.Xamarin == null) obj.Xamarin = new XamarinSettings();
 
 		obj.Xamarin.EnableXamarinIOS 		= GetBoolArgument(context, "enableXamarinIOS", obj.Xamarin.EnableXamarinIOS);
@@ -50,6 +61,7 @@ public class SettingsUtils
 
 		if (obj.NuGet == null) obj.NuGet = new NuGetSettings();
 		
+		obj.NuGet.BuildType		= context.Argument<string>("BuildType", obj.NuGet.BuildType);
 		obj.NuGet.FeedUrl		= context.Argument<string>("nugetFeed", obj.NuGet.FeedUrl);
 		obj.NuGet.FeedUrl		= context.Argument<string>("nugetFeedUrl", obj.NuGet.FeedUrl);
 
@@ -57,6 +69,11 @@ public class SettingsUtils
 		
 		obj.NuGet.LibraryMinVersionDependency 		= (context.Argument<string>("dependencyVersion", obj.NuGet.LibraryMinVersionDependency)).Replace(":",".");
 		obj.NuGet.VersionDependencyTypeForLibrary 	= context.Argument<VersionDependencyTypes>("dependencyType", obj.NuGet.VersionDependencyTypeForLibrary);
+
+		if (obj.NuGet.ArtifactsPath.StartsWith("./")) obj.NuGet.ArtifactsPath = obj.NuGet.ArtifactsPath.Replace("./", obj.RootPath);
+		if (obj.NuGet.ArtifactsPath.Contains("[ROOTPATH]")) obj.NuGet.ArtifactsPath = obj.NuGet.ArtifactsPath.Replace("[ROOTPATH]", obj.RootPath);
+		if (obj.NuGet.NuGetConfig.StartsWith("./")) obj.NuGet.NuGetConfig = obj.NuGet.NuGetConfig.Replace("./", obj.RootPath);
+		if (obj.NuGet.NuGetConfig.Contains("[ROOTPATH]")) obj.NuGet.NuGetConfig = obj.NuGet.NuGetConfig.Replace("[ROOTPATH]", obj.RootPath);
 		
 		return obj;
 	}
@@ -78,6 +95,7 @@ public class SettingsUtils
 		context.Information("\t\t-Configuration=<Configuration>\t\t(Default: {0})", defaultValues.Configuration);
 		context.Information("\t\t-settingsFile=<Settings File>\t\t(Default: {0})", defaultValues.SettingsFile);
 		context.Information("\t\t-versionFile=<Version File>\t\t(Default: {0})", defaultValues.VersionFile);
+		context.Information("\t\t-autoincrement=<0|1>\t\t\t\t(Default: {0})", defaultValues.Version.AutoIncrementVersion);
 		context.Information("\t\t-build=<0|1>\t\t\t\t(Default: {0})", defaultValues.ExecuteBuild);
 		context.Information("\t\t-package=<0|1>\t\t\t\t(Default: {0})", defaultValues.ExecutePackage);
 		context.Information("\t\t-unitTest=<0|1>\t\t\t\t(Default: {0})", defaultValues.ExecuteUnitTest);
@@ -106,6 +124,7 @@ public class Settings
 		ExecuteUnitTest = true;
 		ExecuteClean = true;
 		
+		RootPath = ".\\";
 		Target = "DisplayHelp";
 		Configuration = "Release";
 		SettingsFile = ".\\build.settings.json";
@@ -122,6 +141,7 @@ public class Settings
 	public string Configuration {get;set;}
 	public string SettingsFile {get;set;}
 	public string VersionFile {get;set;}
+	public string RootPath {get;set;}
 	
 	public bool ExecuteBuild {get;set;}
 	public bool ExecutePackage {get;set;}
@@ -139,6 +159,7 @@ public class Settings
 		context.Information("Settings:");
 
 		context.Information("\tTarget: {0}", Target);
+		context.Information("\tRoot Path: {0}", RootPath);
 		context.Information("\tConfiguration: {0}", Configuration);
 		context.Information("\tSettings File: {0}", SettingsFile);
 		context.Information("\tVersion File: {0}", VersionFile);
@@ -280,6 +301,7 @@ public class NuGetSettings
 		LibraryMinVersionDependency = null;
 	}
 
+	public string BuildType {get;set;}
 	public string NuGetConfig {get;set;}
 	public string FeedUrl {get;set;}
 	public string FeedApiKey {get;set;}
@@ -290,6 +312,7 @@ public class NuGetSettings
 	public bool UpdateLibraryDependencies {get;set;}
 	public string LibraryNamespaceBase {get;set;}
 	public string LibraryMinVersionDependency {get;set;}
+	public bool IncludeSymbols {get;set;}
 	
 	public string NuSpecFileSpec {
 		get {
@@ -306,6 +329,7 @@ public class NuGetSettings
 	public void Display(ICakeContext context)
 	{
 		context.Information("NuGet Settings:");
+		context.Information("\tBuild Type: {0}", BuildType);
 		context.Information("\tNuGet Config: {0}", NuGetConfig);
 		context.Information("\tFeed Url: {0}", FeedUrl);
 		//context.Information("\tFeed API Key: {0}", FeedApiKey);
@@ -318,6 +342,7 @@ public class NuGetSettings
 		context.Information("\tForce Version Match: {0}", VersionDependencyTypeForLibrary);
 		context.Information("\tLibrary Namespace Base: {0}", LibraryNamespaceBase);
 		context.Information("\tLibrary Min Version Dependency: {0}", LibraryMinVersionDependency);
+		context.Information("\tInclude Symbols: {0}", IncludeSymbols);
 	}
 }
 

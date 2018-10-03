@@ -1,3 +1,4 @@
+#load "tools/settingsUtils.cake"
 ///////////////////////////////////////////////////////////////////////////////
 // Directives
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ Setup((c) =>
 {
 	c.Information("Command Line:");
 	c.Information("\tConfiguration: {0}", settings.Configuration);
+	c.Information("\tRoot Path: {0}", settings.RootPath);
 	c.Information("\tSettings Files: {0}", settings.SettingsFile);
 	c.Information("\tExecute Build: {0}", settings.ExecuteBuild);
 	c.Information("\tExecute Clean: {0}", settings.ExecuteClean);
@@ -146,9 +148,18 @@ Task("Build")
 			switch (settings.Build.BuildType)
 			{
 				case "dotnetcore":
+					var dotNetCoreBuildSettings = new DotNetCoreMSBuildSettings();
+					if (!string.IsNullOrEmpty(versionInfo.ToVersionPrefix()))
+						dotNetCoreBuildSettings.SetVersionPrefix(versionInfo.ToVersionPrefix());
+					if (!string.IsNullOrEmpty(versionInfo.ToVersionSuffix()))
+						dotNetCoreBuildSettings.SetVersionSuffix(versionInfo.ToVersionSuffix());			
+					if (!string.IsNullOrEmpty(versionInfo.ToString()))
+						dotNetCoreBuildSettings.SetFileVersion(versionInfo.ToString(true));			
+					
 					DotNetCoreBuild(solution.ToString(), new DotNetCoreBuildSettings
 													{
-														Configuration = settings.Configuration														
+														Configuration = settings.Configuration,
+														MSBuildSettings = dotNetCoreBuildSettings
 													}
 									);
 					break;
@@ -231,6 +242,73 @@ Task("Nuget-Package")
 	.Description("Packages all nuspec files into nupkg packages.")
 	.WithCriteria(settings.ExecutePackage)
 	.IsDependentOn("UnitTest")
+	.Does(() =>
+{
+	var artifactsPath = Directory(settings.NuGet.ArtifactsPath);
+		
+	CreateDirectory(artifactsPath);
+
+	switch (settings.NuGet.BuildType)
+	{
+		case "dotnetcore":
+			RunTarget("Nuget-Package-DotNetCore");
+
+			break;
+		default: 
+			RunTarget("Nuget-Package-CLI");
+			
+			break;
+	}
+	
+});
+
+Task("Nuget-Package-DotNetCore")
+	.Description("Packages all projects in the solution using dotnetcore")
+	.WithCriteria(settings.ExecutePackage)
+	.Does(() =>
+{
+	var artifactsPath = Directory(settings.NuGet.ArtifactsPath);
+		
+	CreateDirectory(artifactsPath);
+
+	var dotNetCoreBuildSettings = new DotNetCoreMSBuildSettings();
+	if (!string.IsNullOrEmpty(versionInfo.ToVersionPrefix()))
+		dotNetCoreBuildSettings.SetVersionPrefix(versionInfo.ToVersionPrefix());
+	if (!string.IsNullOrEmpty(versionInfo.ToVersionSuffix()))
+		dotNetCoreBuildSettings.SetVersionSuffix(versionInfo.ToVersionSuffix());			
+	if (!string.IsNullOrEmpty(versionInfo.ToString()))
+		dotNetCoreBuildSettings.SetFileVersion(versionInfo.ToString(true));			
+						
+	 var dncps = new DotNetCorePackSettings
+	 {
+		 Configuration = settings.Configuration,
+		 OutputDirectory = artifactsPath,
+		 IncludeSymbols = settings.NuGet.IncludeSymbols,
+		 NoBuild = true,
+		 NoRestore = true,
+		 MSBuildSettings = dotNetCoreBuildSettings		 
+	 };
+
+	 Information("Location of Artifacts: {0}", artifactsPath);
+
+	 foreach(var solution in solutions)
+	 {
+		Information("Building Packages for {0}", solution);
+
+		try {
+			//DotNetCorePack("./src/**/*.csproj", dncps);
+			DotNetCorePack(solution.ToString(), dncps);
+		}
+		catch (Exception ex)
+		{
+			Information("There was a problem with packing some of the projects in {0}", solution);
+		}
+	}
+});
+
+Task("Nuget-Package-CLI")
+	.Description("Packages all projects in the solution using the nuget.exe cli")
+	.WithCriteria(settings.ExecutePackage)
 	.Does(() =>
 {
 	var artifactsPath = Directory(settings.NuGet.ArtifactsPath);
