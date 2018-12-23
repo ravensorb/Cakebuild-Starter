@@ -1,7 +1,7 @@
-#addin "Cake.Json"
-#addin "Cake.FileHelpers"
-#addin "nuget:https://www.nuget.org/api/v2?package=Newtonsoft.Json"
-#tool nuget:?package=GitVersion.CommandLine
+#addin "Cake.Json&version=3.0.1"
+#addin "Cake.FileHelpers&version=3.1.0"
+#addin "nuget:?package=Newtonsoft.Json&version=9.0.1"
+#tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
 
 using Newtonsoft.Json;
 
@@ -193,11 +193,11 @@ public class VersionUtils
 public class VersionInfo
 {
 	[Newtonsoft.Json.JsonProperty("major")]
-	public int Major {get;set;}
+	public int? Major {get;set;}
 	[Newtonsoft.Json.JsonProperty("minor")]
-	public int Minor {get;set;}
+	public int? Minor {get;set;}
 	[Newtonsoft.Json.JsonProperty("build")]
-	public int Build {get;set;}
+	public int? Build {get;set;}
 	[Newtonsoft.Json.JsonProperty("preRelease")]
 	public int? PreRelease {get;set;}
 	[Newtonsoft.Json.JsonProperty("releaseNotes")]
@@ -213,12 +213,30 @@ public class VersionInfo
 	[Newtonsoft.Json.JsonIgnore]
 	public bool IsPreRelease { get { return PreRelease != null && PreRelease != 0; } }
 
-	public new string ToString(bool includePreRelease = true) 
+	public string ToString(bool includePreRelease = true) 
 	{ 
 		var str = string.Format("{0:#0}.{1:#0}.{2:#0}", Major, Minor, Build);
 		if (IsPreRelease && includePreRelease) str += string.Format("-pre{0:00}", PreRelease);
 
 		return str; 
+	}
+	
+	public string ToVersionPrefix()
+	{
+		if (Major == null || Major == 0) return string.Empty;
+		
+		var str = string.Format("{0:#0}.{1:#0}.{2:#0}", Major, Minor, Build);
+		
+		return str; 
+	}
+	
+	public string ToVersionSuffix()
+	{
+		if (!IsPreRelease) return string.Empty;
+		
+		var str = string.Format("pre{0:00}", PreRelease);
+		
+		return str;
 	}
 	
 	public void Display(ICakeContext context)
