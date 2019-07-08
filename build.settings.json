@@ -1,14 +1,14 @@
 {
 	"version": {
 		"VersionFile": "./build.version.json",
-		"AssemblyInfoFile": "./src/AssemblyInfo.Shared.cs",
+		"AssemblyInfoFile": "",
 		"LoadFrom": "versionfile",
 		"AutoIncrementVersion": false
 	},
 	"build": {
 		"BuildType": "dotnetcore",
 		"SourcePath": "./src",
-		"SolutionFileSpec": "./*.sln",
+		"SolutionFileSpec": "*.sln",
 		"ArtifactsPath": "./artifacts/packages",
 		"TreatWarningsAsErrors": false,
 		"CopyNugetPackagesToArtificatsPath":  true
@@ -27,7 +27,6 @@
 	},
 	"nuget": {
 		"BuildType": "dotnetcore",
-		"NuGetConfig": "./src/.nuget/NuGet.config",
 		"FeedUrl": "https://api.nuget.org/v3/index.json",
 		"FeedAPIKey": "NUGETAPIKEY",
 		"ArtifactsPath": "./artifacts/packages",
