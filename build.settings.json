@@ -22,7 +22,7 @@
 	"test": {
 		"SourcePath": "./tests",
 		"ResultsPath": "./artifacts",
-		"FileSpec": "*.csprj",
+		"FileSpec": "*.csproj",
 		"Framework": "dotnetcore"
 	},
 	"nuget": {

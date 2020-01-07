@@ -1,12 +1,11 @@
-#load "tools/settingsUtils.cake"
 ///////////////////////////////////////////////////////////////////////////////
 // Directives
 ///////////////////////////////////////////////////////////////////////////////
 
 #l "tools/versionUtils.cake"
 #l "tools/settingsUtils.cake"
-#tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
-#addin "nuget:?package=Cake.Incubator&version=5.0.1"
+#addin "nuget:?package=Cake.Incubator&version=5.1.0"
+#tool "nuget:?package=NUnit.ConsoleRunner&version=3.10.0"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -195,6 +194,12 @@ Task("UnitTest")
 	.IsDependentOn("Build")
 	.Does(() => 
 {
+
+	if (!DirectoryExists(settings.Test.ResultsPath))
+	{
+		CreateDirectory(settings.Test.ResultsPath);
+	}
+
 	switch (settings.Test.Framework)
 	{
 		case TestFrameworkTypes.DotNetCore:
@@ -223,6 +228,8 @@ Task("UnitTest-DotNetCore")
 	var testSettings = new DotNetCoreTestSettings()
 				{
 					Configuration = settings.Configuration,
+					Logger = "trx",
+					ResultsDirectory = settings.Test.ResultsPath,
 					NoBuild = true
 				};
 
