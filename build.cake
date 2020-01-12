@@ -65,6 +65,7 @@ Task("CleanAll")
 		Information("Cleaning {0}", path);
 
 		try {
+			CleanDirectories(path + "/packages");
 			CleanDirectories(path + "/**/bin");
 			CleanDirectories(path + "/**/obj");
 		}
