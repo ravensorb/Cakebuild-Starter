@@ -29,7 +29,7 @@ public class VersionUtils
 				verInfo = LoadVersionFromAssemblyInfo(context, settings.Version.AssemblyInfoFile);
 				break;
 			case VersionSourceTypes.git:
-				verInfo = LoadVersionFromGit(context);
+				verInfo = LoadVersionFromGitVersion(context);
 				break;
 			case VersionSourceTypes.azuredevops:
 				//verInfo = LoadVersionFromAzureDevOps(context);
@@ -98,11 +98,6 @@ public class VersionUtils
 		context.Information("Fetching Verson Info from Git");
 
 		try {
-			// GitVersion gitVersionInfo = context.GitVersion(new GitVersionSettings
-			// {
-			// 	OutputType = GitVersionOutput.Json,
-			// });
-
 			var gitVersionInfo = context.GitVersioningGetVersion();
 
 			//context.Information("Git Version Details:\n{0}", gitVersionInfo.Dump());
@@ -117,9 +112,7 @@ public class VersionUtils
 				Milestone = string.Concat("v", gitVersionInfo.VersionRevision)
 			};
 
-			context.Information("Version Info:\n{0}", verInfo.Dump());
-
-			context.Information(context.GitVersioningGetVersion().Dump());
+			//context.Information("Version Info:\n{0}", verInfo.Dump());
 
 			return verInfo;
 		} catch {
@@ -128,6 +121,37 @@ public class VersionUtils
 		return null;
 	}
 	
+	private static VersionInfo LoadVersionFromGitVersion(ICakeContext context)
+	{
+		context.Information("Fetching Verson Info from Git Version");
+
+		try {
+			GitVersion gitVersionInfo = context.GitVersion(new GitVersionSettings
+			{
+				OutputType = GitVersionOutput.Json,
+			});
+
+			//context.Information("Git Version Details:\n{0}", gitVersionInfo.Dump());
+
+			var verInfo = new VersionInfo {
+				Major = gitVersionInfo.Major,
+				Minor = gitVersionInfo.Minor,
+				Build = gitVersionInfo.Patch,
+				Suffix = gitVersionInfo.PreReleaseLabel,
+				PreRelease = gitVersionInfo.PreReleaseNumber,
+				Semantic = gitVersionInfo.NuGetVersionV2,
+				Milestone = gitVersionInfo.FullBuildMetaData
+			};
+
+			//context.Information("Version Info:\n{0}", verInfo.Dump());
+
+			return verInfo;
+		} catch {
+		}
+
+		return null;
+	}
+
 	private static VersionInfo LoadVersionFromAzureDevOps(ICakeContext context)
 	{
 		context.Information("Fetching Verson Info from Azure DevOps");
@@ -161,7 +185,8 @@ public class VersionUtils
 				Minor = context.Argument<int?>("versionMinor", 0),
 				Build = context.Argument<int?>("versionBuild", 0),
 				PreRelease = context.Argument<int?>("versionPreRelease", 0),
-				Suffix = context.Argument<string>("versionSuffix", "")
+				Suffix = context.Argument<string>("versionSuffix", ""),
+				Semantic = context.Argument<string>("versionSem", "")
 			};
 
 			context.Information("Calculated Semantic Version: {0}", verInfo.Semantic);
@@ -275,10 +300,15 @@ public class VersionInfo
 	public string CakeVersion {get;set;}
 	
 	[Newtonsoft.Json.JsonIgnore]
-	public bool IsPreRelease { get { return PreRelease != null && PreRelease != 0; } }
+	public bool IsPreRelease { get { return (PreRelease != null && PreRelease != 0); } }
+
+	[Newtonsoft.Json.JsonIgnore]
+	public bool IsSemantic { get { return !string.IsNullOrEmpty(Semantic); } }
 
 	public string ToString(bool includePreRelease = true) 
 	{ 
+		if (IsSemantic) return Semantic;
+
 		var str = string.Format("{0}{1}", ToVersionPrefix(), includePreRelease ? ToVersionSuffix() : "");
 
 		return str; 
@@ -295,7 +325,7 @@ public class VersionInfo
 	
 	public string ToVersionSuffix()
 	{
-		if (!IsPreRelease) return string.Empty;
+		if (!IsPreRelease || IsSemantic) return string.Empty;
 		
 		if (string.IsNullOrEmpty(Suffix)) Suffix = "pre";
 
@@ -312,6 +342,7 @@ public class VersionInfo
 		context.Information("\tBuild: {0}", Build);
 		context.Information("\tSuffix: {0}", ToVersionSuffix());
 		context.Information("\tIs PreRelease: {0}", IsPreRelease);
+		context.Information("\tIs Semantic: {0}", IsSemantic);
 		context.Information("\tSemantic: {0}", Semantic);
 		context.Information("\tMilestone: {0}", Milestone);
 		context.Information("\tCake Version: {0}", CakeVersion);
